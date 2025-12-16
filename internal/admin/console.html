@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAF 控制台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 10px;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            background-color: #34495e;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 卡片 */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            font-size: 16px;
+        }
+
+        .tab.active {
+            background-color: white;
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* 内容面板 */
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        /* 系统信息 */
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="logo">WAF 控制台</div>
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showPanel('dashboard')">仪表盘</a></li>
+                <li><a href="#" onclick="showPanel('domains')">域名管理</a></li>
+                <li><a href="#" onclick="showPanel('tenants')">租户管理</a></li>
+                <li><a href="#" onclick="showPanel('certificates')">证书管理</a></li>
+                <li><a href="#" onclick="showPanel('policies')">防护策略</a></li>
+                <li><a href="#" onclick="showPanel('rules')">规则管理</a></li>
+                <li><a href="#" onclick="showPanel('logs')">日志查询</a></li>
+                <li><a href="#" onclick="showPanel('settings')">系统设置</a></li>
+            </ul>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="header">
+                <h1 id="panel-title">仪表盘</h1>
+                <div class="user-info">
+                    <span>管理员</span>
+                </div>
+            </div>
+
+            <!-- 仪表盘 -->
+            <div id="dashboard" class="content-panel active">
+                <div class="system-info">
+                    <div class="info-card">
+                        <h3>系统状态</h3>
+                        <p id="system-status">运行中</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>配置数量</h3>
+                        <p id="config-count">0</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>规则数量</h3>
+                        <p id="rule-count">0</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>版本</h3>
+                        <p id="system-version">1.0.0</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">系统信息</div>
+                    </div>
+                    <pre id="system-details">加载中...</pre>
+                </div>
+            </div>
+
+            <!-- 域名管理 -->
+            <div id="domains" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">域名列表</div>
+                        <button class="btn btn-primary" onclick="openCreateDomainModal()">添加域名</button>
+                    </div>
+                    <table id="domain-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>域名</th>
+                                <th>租户ID</th>
+                                <th>证书ID</th>
+                                <th>防护策略</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="domain-table-body">
+                            <!-- 域名数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 租户管理 -->
+            <div id="tenants" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">租户列表</div>
+                        <button class="btn btn-primary" onclick="openCreateTenantModal()">添加租户</button>
+                    </div>
+                    <table id="tenant-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>描述</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tenant-table-body">
+                            <!-- 租户数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 证书管理 -->
+            <div id="certificates" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">证书列表</div>
+                        <button class="btn btn-primary" onclick="openCreateCertificateModal()">添加证书</button>
+                    </div>
+                    <table id="certificate-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>域名</th>
+                                <th>有效期</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="certificate-table-body">
+                            <!-- 证书数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 防护策略 -->
+            <div id="policies" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">防护策略列表</div>
+                        <button class="btn btn-primary" onclick="openCreatePolicyModal()">添加策略</button>
+                    </div>
+                    <table id="policy-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>类型</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="policy-table-body">
+                            <!-- 策略数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 配置中心 -->
+            <div id="configs" class="content-panel">
+                <div class="tabs">
+                    <button class="tab active" onclick="showConfigTab('all')">所有配置</button>
+                    <button class="tab" onclick="showConfigTab('server')">服务器配置</button>
+                    <button class="tab" onclick="showConfigTab('rules')">规则配置</button>
+                    <button class="tab" onclick="showConfigTab('ai')">AI配置</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">配置列表</div>
+                        <button class="btn btn-primary" onclick="openCreateConfigModal()">新建配置</button>
+                    </div>
+                    <table id="config-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>类型</th>
+                                <th>名称</th>
+                                <th>版本</th>
+                                <th>状态</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="config-table-body">
+                            <!-- 配置数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 规则管理 -->
+            <div id="rules" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">规则列表</div>
+                        <button class="btn btn-primary" onclick="openCreateRuleModal()">新建规则</button>
+                    </div>
+                    <table id="rule-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>类型</th>
+                                <th>风险分数</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rule-table-body">
+                            <!-- 规则数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 日志查询 -->
+            <div id="logs" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">日志查询</div>
+                    </div>
+                    <p>日志查询功能开发中...</p>
+                </div>
+            </div>
+
+            <!-- 系统设置 -->
+            <div id="settings" class="content-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">系统设置</div>
+                    </div>
+                    <p>系统设置功能开发中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建域名模态框 -->
+    <div id="create-domain-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加域名</h2>
+                <span class="close" onclick="closeCreateDomainModal()">&times;</span>
+            </div>
+            <form id="create-domain-form">
+                <div class="form-group">
+                    <label for="domain-name">域名</label>
+                    <input type="text" id="domain-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="domain-tenant-id">租户ID</label>
+                    <input type="text" id="domain-tenant-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="domain-certificate-id">证书ID</label>
+                    <input type="text" id="domain-certificate-id">
+                </div>
+                <div class="form-group">
+                    <label for="domain-policy-id">防护策略ID</label>
+                    <input type="text" id="domain-policy-id">
+                </div>
+                <div class="form-group">
+                    <label for="domain-enabled">启用</label>
+                    <input type="checkbox" id="domain-enabled" checked>
+                </div>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 创建租户模态框 -->
+    <div id="create-tenant-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加租户</h2>
+                <span class="close" onclick="closeCreateTenantModal()">&times;</span>
+            </div>
+            <form id="create-tenant-form">
+                <div class="form-group">
+                    <label for="tenant-name">租户名称</label>
+                    <input type="text" id="tenant-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="tenant-description">描述</label>
+                    <textarea id="tenant-description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 创建证书模态框 -->
+    <div id="create-certificate-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加证书</h2>
+                <span class="close" onclick="closeCreateCertificateModal()">&times;</span>
+            </div>
+            <form id="create-certificate-form">
+                <div class="form-group">
+                    <label for="certificate-domain">域名</label>
+                    <input type="text" id="certificate-domain" required>
+                </div>
+                <div class="form-group">
+                    <label for="certificate-pem">证书PEM</label>
+                    <textarea id="certificate-pem" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="certificate-key">私钥PEM</label>
+                    <textarea id="certificate-key" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 创建防护策略模态框 -->
+    <div id="create-policy-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加防护策略</h2>
+                <span class="close" onclick="closeCreatePolicyModal()">&times;</span>
+            </div>
+            <form id="create-policy-form">
+                <div class="form-group">
+                    <label for="policy-name">策略名称</label>
+                    <input type="text" id="policy-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="policy-type">策略类型</label>
+                    <select id="policy-type" required>
+                        <option value="waf">WAF防护</option>
+                        <option value="rate_limit">限流</option>
+                        <option value="geo_ban">地域封禁</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="policy-config">策略配置 (JSON格式)</label>
+                    <textarea id="policy-config" rows="5" required>{"enabled": true}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 创建配置模态框 -->
+    <div id="create-config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>创建新配置</h2>
+                <span class="close" onclick="closeCreateConfigModal()">&times;</span>
+            </div>
+            <form id="create-config-form">
+                <div class="form-group">
+                    <label for="config-type">配置类型</label>
+                    <select id="config-type" required>
+                        <option value="server">服务器配置</option>
+                        <option value="admin">管理后台配置</option>
+                        <option value="rules">安全规则配置</option>
+                        <option value="ai">AI模块配置</option>
+                        <option value="logging">日志系统配置</option>
+                        <option value="metrics">监控指标配置</option>
+                        <option value="storage">存储系统配置</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="config-name">配置名称</label>
+                    <input type="text" id="config-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="config-description">描述</label>
+                    <textarea id="config-description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="config-value">配置值 (JSON格式)</label>
+                    <textarea id="config-value" rows="5" required>{} </textarea>
+                </div>
+                <div class="form-group">
+                    <label for="config-enabled">启用</label>
+                    <input type="checkbox" id="config-enabled" checked>
+                </div>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 切换面板
+        function showPanel(panelId) {
+            // 隐藏所有面板
+            const panels = document.querySelectorAll('.content-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+
+            // 显示选中的面板
+            const selectedPanel = document.getElementById(panelId);
+            selectedPanel.classList.add('active');
+
+            // 更新标题
+            const titles = {
+                'dashboard': '仪表盘',
+                'domains': '域名管理',
+                'tenants': '租户管理',
+                'certificates': '证书管理',
+                'policies': '防护策略',
+                'configs': '配置中心',
+                'rules': '规则管理',
+                'logs': '日志查询',
+                'settings': '系统设置'
+            };
+            document.getElementById('panel-title').textContent = titles[panelId];
+
+            // 加载数据
+            if (panelId === 'dashboard') {
+                loadDashboardData();
+            } else if (panelId === 'domains') {
+                loadDomains();
+            } else if (panelId === 'tenants') {
+                loadTenants();
+            } else if (panelId === 'certificates') {
+                loadCertificates();
+            } else if (panelId === 'policies') {
+                loadPolicies();
+            } else if (panelId === 'configs') {
+                loadConfigs();
+            } else if (panelId === 'rules') {
+                loadRules();
+            }
+        }
+
+        // 加载仪表盘数据
+        function loadDashboardData() {
+            fetch('/api/system')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('system-version').textContent = data.version;
+                    document.getElementById('system-details').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    console.error('加载系统信息失败:', error);
+                    document.getElementById('system-details').textContent = '加载失败: ' + error.message;
+                });
+        }
+
+        // 加载域名列表
+        function loadDomains() {
+            fetch('/api/domains')
+                .then(response => response.json())
+                .then(domains => {
+                    const tbody = document.getElementById('domain-table-body');
+                    tbody.innerHTML = '';
+                    domains.forEach(domain => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${domain.id}</td>
+                            <td>${domain.name}</td>
+                            <td>${domain.tenant_id}</td>
+                            <td>${domain.certificate_id || '-'}</td>
+                            <td>${domain.policy_id || '-'}</td>
+                            <td>${domain.enabled ? '启用' : '禁用'}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editDomain('${domain.id}')">编辑</button>
+                                <button class="btn btn-danger" onclick="deleteDomain('${domain.id}')">删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载域名列表失败:', error);
+                });
+        }
+
+        // 加载租户列表
+        function loadTenants() {
+            fetch('/api/tenants')
+                .then(response => response.json())
+                .then(tenants => {
+                    const tbody = document.getElementById('tenant-table-body');
+                    tbody.innerHTML = '';
+                    tenants.forEach(tenant => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${tenant.id}</td>
+                            <td>${tenant.name}</td>
+                            <td>${tenant.description || '-'}</td>
+                            <td>${new Date(tenant.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editTenant('${tenant.id}')">编辑</button>
+                                <button class="btn btn-danger" onclick="deleteTenant('${tenant.id}')">删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载租户列表失败:', error);
+                });
+        }
+
+        // 加载证书列表
+        function loadCertificates() {
+            fetch('/api/certificates')
+                .then(response => response.json())
+                .then(certificates => {
+                    const tbody = document.getElementById('certificate-table-body');
+                    tbody.innerHTML = '';
+                    certificates.forEach(cert => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${cert.id}</td>
+                            <td>${cert.domain}</td>
+                            <td>${new Date(cert.expiry_date).toLocaleDateString()}</td>
+                            <td>${cert.valid ? '有效' : '无效'}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editCertificate('${cert.id}')">编辑</button>
+                                <button class="btn btn-danger" onclick="deleteCertificate('${cert.id}')">删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载证书列表失败:', error);
+                });
+        }
+
+        // 加载防护策略列表
+        function loadPolicies() {
+            fetch('/api/policies')
+                .then(response => response.json())
+                .then(policies => {
+                    const tbody = document.getElementById('policy-table-body');
+                    tbody.innerHTML = '';
+                    policies.forEach(policy => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${policy.id}</td>
+                            <td>${policy.name}</td>
+                            <td>${policy.type}</td>
+                            <td>${policy.enabled ? '启用' : '禁用'}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editPolicy('${policy.id}')">编辑</button>
+                                <button class="btn btn-danger" onclick="deletePolicy('${policy.id}')">删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载防护策略列表失败:', error);
+                });
+        }
+
+        // 显示配置标签页
+        function showConfigTab(tabId) {
+            // 更新标签页状态
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 加载对应类型的配置
+            if (tabId === 'all') {
+                loadConfigs();
+            } else {
+                loadConfigsByType(tabId);
+            }
+        }
+
+        // 加载配置列表
+        function loadConfigs() {
+            fetch('/api/configs')
+                .then(response => response.json())
+                .then(data => {
+                    renderConfigs(data);
+                })
+                .catch(error => {
+                    console.error('加载配置失败:', error);
+                });
+        }
+
+        // 按类型加载配置
+        function loadConfigsByType(type) {
+            fetch(`/api/configs/type/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderConfigs(data);
+                })
+                .catch(error => {
+                    console.error('加载配置失败:', error);
+                });
+        }
+
+        // 渲染配置列表
+        function renderConfigs(configs) {
+            const tableBody = document.getElementById('config-table-body');
+            tableBody.innerHTML = '';
+
+            configs.forEach(config => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${config.id}</td>
+                    <td>${config.type}</td>
+                    <td>${config.name}</td>
+                    <td>${config.version}</td>
+                    <td>${config.enabled ? '启用' : '禁用'}</td>
+                    <td>${new Date(config.updated_at).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-primary">编辑</button>
+                        <button class="btn btn-danger">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // 更新配置数量
+            document.getElementById('config-count').textContent = configs.length;
+        }
+
+        // 加载规则列表
+        function loadRules() {
+            fetch('/api/rules')
+                .then(response => response.json())
+                .then(data => {
+                    renderRules(data);
+                })
+                .catch(error => {
+                    console.error('加载规则失败:', error);
+                });
+        }
+
+        // 渲染规则列表
+        function renderRules(rules) {
+            const tableBody = document.getElementById('rule-table-body');
+            tableBody.innerHTML = '';
+
+            rules.forEach(rule => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rule.id}</td>
+                    <td>${rule.name}</td>
+                    <td>${rule.type}</td>
+                    <td>${rule.riskScore}</td>
+                    <td>${rule.enabled ? '启用' : '禁用'}</td>
+                    <td>
+                        <button class="btn btn-primary">编辑</button>
+                        <button class="btn btn-danger">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // 更新规则数量
+            document.getElementById('rule-count').textContent = rules.length;
+        }
+
+        // 打开创建域名模态框
+        function openCreateDomainModal() {
+            document.getElementById('create-domain-modal').style.display = 'block';
+        }
+
+        // 关闭创建域名模态框
+        function closeCreateDomainModal() {
+            document.getElementById('create-domain-modal').style.display = 'none';
+            document.getElementById('create-domain-form').reset();
+        }
+
+        // 打开创建租户模态框
+        function openCreateTenantModal() {
+            document.getElementById('create-tenant-modal').style.display = 'block';
+        }
+
+        // 关闭创建租户模态框
+        function closeCreateTenantModal() {
+            document.getElementById('create-tenant-modal').style.display = 'none';
+            document.getElementById('create-tenant-form').reset();
+        }
+
+        // 打开创建证书模态框
+        function openCreateCertificateModal() {
+            document.getElementById('create-certificate-modal').style.display = 'block';
+        }
+
+        // 关闭创建证书模态框
+        function closeCreateCertificateModal() {
+            document.getElementById('create-certificate-modal').style.display = 'none';
+            document.getElementById('create-certificate-form').reset();
+        }
+
+        // 打开创建防护策略模态框
+        function openCreatePolicyModal() {
+            document.getElementById('create-policy-modal').style.display = 'block';
+        }
+
+        // 关闭创建防护策略模态框
+        function closeCreatePolicyModal() {
+            document.getElementById('create-policy-modal').style.display = 'none';
+            document.getElementById('create-policy-form').reset();
+        }
+
+        // 打开创建配置模态框
+        function openCreateConfigModal() {
+            document.getElementById('create-config-modal').style.display = 'block';
+        }
+
+        // 关闭创建配置模态框
+        function closeCreateConfigModal() {
+            document.getElementById('create-config-modal').style.display = 'none';
+            document.getElementById('create-config-form').reset();
+        }
+
+        // 提交创建配置表单
+        document.getElementById('create-config-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const config = {
+                type: document.getElementById('config-type').value,
+                name: document.getElementById('config-name').value,
+                description: document.getElementById('config-description').value,
+                value: JSON.parse(document.getElementById('config-value').value),
+                enabled: document.getElementById('config-enabled').checked
+            };
+
+            fetch('/api/configs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('配置创建成功:', data);
+                closeCreateConfigModal();
+                loadConfigs();
+            })
+            .catch(error => {
+                console.error('创建配置失败:', error);
+                alert('创建配置失败: ' + error.message);
+            });
+        });
+
+        // 创建域名表单提交
+        document.getElementById('create-domain-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const domain = {
+                name: document.getElementById('domain-name').value,
+                value: {
+                    domain_name: document.getElementById('domain-name').value,
+                    tenant_id: document.getElementById('domain-tenant-id').value,
+                    certificate_id: document.getElementById('domain-certificate-id').value || '',
+                    policy_id: document.getElementById('domain-policy-id').value || '',
+                    origin_servers: []
+                },
+                description: `域名配置: ${document.getElementById('domain-name').value}`,
+                enabled: document.getElementById('domain-enabled').checked
+            };
+
+            fetch('/api/domains', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(domain)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('域名创建成功:', data);
+                closeCreateDomainModal();
+                loadDomains();
+            })
+            .catch(error => {
+                console.error('创建域名失败:', error);
+                alert('创建域名失败: ' + error.message);
+            });
+        });
+
+        // 创建租户表单提交
+        document.getElementById('create-tenant-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const tenant = {
+                name: document.getElementById('tenant-name').value,
+                value: {
+                    tenant_name: document.getElementById('tenant-name').value,
+                    contact_email: '',
+                    contact_phone: '',
+                    quota: { domains: 10, bandwidth: "10GB" }
+                },
+                description: document.getElementById('tenant-description').value || '',
+                enabled: true
+            };
+
+            fetch('/api/tenants', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tenant)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('租户创建成功:', data);
+                closeCreateTenantModal();
+                loadTenants();
+            })
+            .catch(error => {
+                console.error('创建租户失败:', error);
+                alert('创建租户失败: ' + error.message);
+            });
+        });
+
+        // 创建证书表单提交
+        document.getElementById('create-certificate-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const certificate = {
+                name: document.getElementById('certificate-domain').value,
+                value: {
+                    domain: document.getElementById('certificate-domain').value,
+                    certificate: document.getElementById('certificate-pem').value,
+                    private_key: document.getElementById('certificate-key').value,
+                    issuer: '',
+                    not_before: '',
+                    not_after: ''
+                },
+                description: `证书配置: ${document.getElementById('certificate-domain').value}`,
+                enabled: true
+            };
+
+            fetch('/api/certificates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(certificate)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('证书创建成功:', data);
+                closeCreateCertificateModal();
+                loadCertificates();
+            })
+            .catch(error => {
+                console.error('创建证书失败:', error);
+                alert('创建证书失败: ' + error.message);
+            });
+        });
+
+        // 创建防护策略表单提交
+        document.getElementById('create-policy-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const policy = {
+                name: document.getElementById('policy-name').value,
+                value: {
+                    policy_name: document.getElementById('policy-name').value,
+                    policy_type: document.getElementById('policy-type').value,
+                    policy_config: JSON.parse(document.getElementById('policy-config').value)
+                },
+                description: `防护策略: ${document.getElementById('policy-name').value}`,
+                enabled: true
+            };
+
+            fetch('/api/policies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(policy)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('防护策略创建成功:', data);
+                closeCreatePolicyModal();
+                loadPolicies();
+            })
+            .catch(error => {
+                console.error('创建防护策略失败:', error);
+                alert('创建防护策略失败: ' + error.message);
+            });
+        });
+
+        // 删除域名
+        function deleteDomain(id) {
+            if (confirm('确定要删除这个域名吗？')) {
+                fetch(`/api/domains/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                    loadDomains();
+                })
+                .catch(error => {
+                    console.error('删除域名失败:', error);
+                    alert('删除域名失败: ' + error.message);
+                });
+            }
+        }
+
+        // 删除租户
+        function deleteTenant(id) {
+            if (confirm('确定要删除这个租户吗？')) {
+                fetch(`/api/tenants/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                    loadTenants();
+                })
+                .catch(error => {
+                    console.error('删除租户失败:', error);
+                    alert('删除租户失败: ' + error.message);
+                });
+            }
+        }
+
+        // 删除证书
+        function deleteCertificate(id) {
+            if (confirm('确定要删除这个证书吗？')) {
+                fetch(`/api/certificates/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                    loadCertificates();
+                })
+                .catch(error => {
+                    console.error('删除证书失败:', error);
+                    alert('删除证书失败: ' + error.message);
+                });
+            }
+        }
+
+        // 删除防护策略
+        function deletePolicy(id) {
+            if (confirm('确定要删除这个防护策略吗？')) {
+                fetch(`/api/policies/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                    loadPolicies();
+                })
+                .catch(error => {
+                    console.error('删除防护策略失败:', error);
+                    alert('删除防护策略失败: ' + error.message);
+                });
+            }
+        }
+
+        // 编辑功能（占位符）
+        function editDomain(id) {
+            alert('编辑域名功能开发中: ' + id);
+        }
+
+        function editTenant(id) {
+            alert('编辑租户功能开发中: ' + id);
+        }
+
+        function editCertificate(id) {
+            alert('编辑证书功能开发中: ' + id);
+        }
+
+        function editPolicy(id) {
+            alert('编辑防护策略功能开发中: ' + id);
+        }
+
+        // 关闭模态框
+        window.onclick = function(event) {
+            const modals = [
+                'create-domain-modal',
+                'create-tenant-modal',
+                'create-certificate-modal',
+                'create-policy-modal',
+                'create-config-modal'
+            ];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
