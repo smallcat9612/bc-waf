@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WAF测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web应用防火墙(WAF)测试页面</h1>
+    
+    <div class="test-section">
+        <h2>1. 基本请求测试</h2>
+        <button class="test-button" onclick="testBasicRequest()">发送基本请求</button>
+        <div class="result" id="basic-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. SQL注入测试</h2>
+        <button class="test-button" onclick="testSqlInjection()">发送SQL注入请求</button>
+        <div class="result" id="sql-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. XSS攻击测试</h2>
+        <button class="test-button" onclick="testXss()">发送XSS攻击请求</button>
+        <div class="result" id="xss-result"></div>
+    </div>
+
+    <script>
+        function testBasicRequest() {
+            fetch('http://localhost:8080/test')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('basic-result').innerHTML = '<pre>' + data + '</pre>';
+                })
+                .catch(error => {
+                    document.getElementById('basic-result').innerHTML = '错误: ' + error.message;
+                });
+        }
+        
+        function testSqlInjection() {
+            fetch('http://localhost:8080/test?id=1%27%20OR%201=1--')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('sql-result').innerHTML = '<pre>' + data + '</pre>';
+                })
+                .catch(error => {
+                    document.getElementById('sql-result').innerHTML = '错误: ' + error.message;
+                });
+        }
+        
+        function testXss() {
+            fetch('http://localhost:8080/test?name=<script>alert("XSS")</script>')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('xss-result').innerHTML = '<pre>' + data + '</pre>';
+                })
+                .catch(error => {
+                    document.getElementById('xss-result').innerHTML = '错误: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>
